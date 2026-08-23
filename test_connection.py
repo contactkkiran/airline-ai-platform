@@ -163,7 +163,7 @@ if response.stop_reason == "tool_use":
     final_response = client.messages.create(
         model="claude-sonnet-4-5",
         max_tokens=1024,
-        tools=[flight_status_tool_schema],
+        # tools=[flight_status_tool_schema],
         messages=[
             {
                 "role": "user",
