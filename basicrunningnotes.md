@@ -336,20 +336,32 @@ flowchart TD
 ```
 
 And that's where the Airline AI Platform starts becoming a real Agentic AI system.
-Now lets make it realisic . an we  integrate google fight search?
+
+---
+
+## 4. Making it realistic — integrating real flight search
+
+> Now lets make it realisic . an we  integrate google fight search?
+
 Yes — and this is exactly the right next step.
+
 We can replace our fake:
 
+```python
 fake_db = {
     "AI202": ...
 }
-with a real flight-search capability.
-One important distinction first:
+```
 
-Google Flights itself
+with a real flight-search capability. One important distinction first:
+
+### 4.1 Google Flights itself
+
 We shouldn't try to scrape the Google Flights website. Google Flights doesn't provide a normal public flight-search API that we can simply call from Python.
+
 For a realistic learning project, I recommend this architecture:
 
+```
 User
  │
  │ "Find flights Hyderabad → Delhi tomorrow"
@@ -371,10 +383,13 @@ Claude
  │
  ▼
 Natural-language recommendation
-For example, we can use a flight-data provider such as Amadeus for the actual API search, while keeping the interface exposed to Claude as our own:
-flight_search(...)
-This is actually better Agentic AI architecture than coupling Claude directly to a third-party API.
-Our project would become
+```
+
+For example, we can use a flight-data provider such as Amadeus for the actual API search, while keeping the interface exposed to Claude as our own: `flight_search(...)`. This is actually better Agentic AI architecture than coupling Claude directly to a third-party API.
+
+### 4.2 Our project would become
+
+```
 airline-ai-platform/
 │
 ├── src/
@@ -386,7 +401,11 @@ airline-ai-platform/
 │       └── flight_search.py       ← NEW
 │
 └── test_connection.py
+```
+
 And the tool schema would eventually look conceptually like:
+
+```python
 flight_search_tool_schema = {
     "name": "flight_search",
     "description": "Search available flights between two airports.",
@@ -410,9 +429,11 @@ flight_search_tool_schema = {
         ]
     }
 }
-Then Claude could receive:
-Find flights from Hyderabad to Delhi on September 5.
-and generate something like:
+```
+
+Then Claude could receive: *Find flights from Hyderabad to Delhi on September 5.* and generate something like:
+
+```
 tool_use
 flight_search
 
@@ -421,17 +442,23 @@ flight_search
     "destination": "DEL",
     "departure_date": "2026-09-05"
 }
+```
+
 Your Python application then calls the real flight API.
-But let's do this slowly
-I don't want to throw an API integration at you yet.
-Next step should be choosing the real flight-data provider and setting up its API credentials securely in your existing settings.py.
+
+### 4.3 But let's do this slowly
+
+I don't want to throw an API integration at you yet. Next step should be choosing the real flight-data provider and setting up its API credentials securely in your existing `settings.py`.
 
 We can investigate the current options and choose one that has a usable developer API/free or trial tier.
 
-We should not touch your existing flight_status.py or working test_connection.py.
-We'll add Amadeus as a completely separate integration.
+We should not touch your existing `flight_status.py` or working `test_connection.py`. We'll add Amadeus as a completely separate integration.
 
-Proposed structure
+---
+
+## 5. Proposed structure — Amadeus as a separate integration
+
+```
 airline-ai-platform/
 │
 ├── src/
@@ -452,7 +479,11 @@ airline-ai-platform/
 ├── test_connection.py                ← EXISTING, DON'T TOUCH
 │
 └── README.md
+```
+
 This gives us a clean separation:
+
+```
 tools/
     ↓
 Claude-facing tools
@@ -460,9 +491,11 @@ Claude-facing tools
 integrations/
     ↓
 External systems/APIs
-That's actually an important enterprise architecture principle.
-Later:
+```
 
+That's actually an important enterprise architecture principle. Later:
+
+```
 Claude
   │
   ├── flight_status tool
@@ -474,8 +507,13 @@ Claude
        Amadeus
            ↓
       real flight data
-Even better
+```
+
+### 5.1 Even better
+
 We can eventually have:
+
+```
 src/
 ├── agents/
 ├── tools/
@@ -485,25 +523,39 @@ src/
 │   └── payments/
 ├── orchestration/
 └── config/
-But don't create all of those yet.
-For now, we'll create only:
+```
 
+But don't create all of those yet. For now, we'll create only:
+
+```
 src/integrations/amadeus/
+```
+
 and leave everything you've already built intact.
-One important rule for our project
+
+### 5.2 One important rule for our project
+
 From now on I'll clearly label things:
-🟢 EXISTING — DON'T CHANGE
 
-🔵 NEW — CREATE
-
-🟡 MODIFY — ONLY IF WE AGREE
+- 🟢 EXISTING — DON'T CHANGE
+- 🔵 NEW — CREATE
+- 🟡 MODIFY — ONLY IF WE AGREE
 
 That way you can commit each stage to Git without accidentally breaking previous learning milestones.
 
-Next step: we'll create only the Amadeus folder and its __init__.py. No API code yet. Then we'll commit that checkpoint.
-please add this to original project hierrarcy
+Next step: we'll create only the Amadeus folder and its `__init__.py`. No API code yet. Then we'll commit that checkpoint.
+
+---
+
+## 6. Adding Amadeus into the original project hierarchy
+
+> please add this to original project hierrarcy
+
 Yes. Let's keep your original project hierarchy intact and add Amadeus cleanly underneath it.
-Updated project hierarchy
+
+### 6.1 Updated project hierarchy
+
+```
 airline-ai-platform/
 │
 ├── .gitignore
@@ -524,7 +576,11 @@ airline-ai-platform/
             ├── __init__.py
             ├── client.py
             └── flight_search.py
-What each part means
+```
+
+### 6.2 What each part means
+
+```
 src/
 │
 ├── config/
@@ -545,20 +601,23 @@ src/
         │
         └── flight_search.py
             └── Actual Amadeus flight-search operation
-Most importantly
+```
+
+### 6.3 Most importantly
+
 Your existing code remains untouched:
-🟢 KEEP
-src/config/settings.py
 
-🟢 KEEP
-src/tools/flight_status.py
+- 🟢 KEEP `src/config/settings.py`
+- 🟢 KEEP `src/tools/flight_status.py`
+- 🟢 KEEP `test_connection.py`
 
-🟢 KEEP
-test_connection.py
 We're adding:
-🔵 NEW
-src/integrations/amadeus/
-The eventual architecture will be:
+
+- 🔵 NEW `src/integrations/amadeus/`
+
+### 6.4 The eventual architecture will be
+
+```
                      Claude
                        │
                 ┌──────┴──────┐
@@ -573,10 +632,15 @@ The eventual architecture will be:
                               │
                               ▼
                        Real flight data
-Don't write the Amadeus code yet. The next step should be creating just the directory and __init__.py, then we'll understand why we're separating tools from external integrations before writing the API client.
+```
 
+Don't write the Amadeus code yet. The next step should be creating just the directory and `__init__.py`, then we'll understand why we're separating tools from external integrations before writing the API client.
 
-Complete project hierarchy
+---
+
+## 7. Complete project hierarchy (checkpoint)
+
+```
 airline-ai-platform/
 │
 ├── 🟢 BASIC / EXISTING — DO NOT CHANGE
@@ -615,8 +679,13 @@ airline-ai-platform/
 ├── basicrunning....                     🟢 EXISTING
 ├── README.md                            🟢 EXISTING
 └── test_connection.py                   🟢 EXISTING
-🟢 BASIC — untouched
+```
+
+### 7.1 🟢 BASIC — untouched
+
 Your existing foundation stays exactly as it is:
+
+```
 src/
 ├── agents/
 ├── config/
@@ -626,9 +695,11 @@ src/
     └── flight_status.py
 
 test_connection.py
-We will not modify these files for the Amadeus work.
-Your current working flow remains:
+```
 
+We will not modify these files for the Amadeus work. Your current working flow remains:
+
+```
 User
  ↓
 Claude
@@ -644,15 +715,24 @@ tool_result
 Claude
  ↓
 Final answer
-🔵 AMADEUS — new integration
+```
+
+### 7.2 🔵 AMADEUS — new integration
+
 We're adding this separately:
+
+```
 src/
 └── integrations/
     └── amadeus/
         ├── __init__.py
         ├── client.py
         └── flight_search.py
+```
+
 The responsibility will be:
+
+```
 client.py
     ↓
 Connect/authenticate with Amadeus
@@ -660,9 +740,11 @@ Connect/authenticate with Amadeus
 flight_search.py
     ↓
 Perform real flight-search operation
-Later, we'll create a Claude-facing tool that calls this integration.
-So eventually:
+```
 
+Later, we'll create a Claude-facing tool that calls this integration. So eventually:
+
+```
                     CLAUDE
                       │
              ┌────────┴────────┐
@@ -680,22 +762,31 @@ So eventually:
                          │
                          ▼
                     Amadeus API
-⚠️ Important
-Do not create client.py or flight_search.py yet.
-For our slow-learning approach, our next step should be only:
+```
 
+### 7.3 ⚠️ Important
+
+Do not create `client.py` or `flight_search.py` yet. For our slow-learning approach, our next step should be only:
+
+```
 src/integrations/
 └── amadeus/
     └── __init__.py
-Then we will understand why integrations is separate from tools before writing the first Amadeus API code.
-That keeps your BASIC foundation untouched while we build the AMADEUS track separately.
+```
 
+Then we will understand why `integrations` is separate from `tools` before writing the first Amadeus API code. That keeps your BASIC foundation untouched while we build the AMADEUS track separately.
 
-can we care separate dir for Amadeus tool
-Yes — I actually prefer that for this project, especially because you want to learn slowly and keep the original/basic implementation untouched.
-We can give Amadeus its own complete tool area.
+---
 
-Updated hierarchy
+## 8. Giving Amadeus its own top-level directory
+
+> can we care separate dir for Amadeus tool
+
+Yes — I actually prefer that for this project, especially because you want to learn slowly and keep the original/basic implementation untouched. We can give Amadeus its own complete tool area.
+
+### 8.1 Updated hierarchy
+
+```
 airline-ai-platform/
 │
 ├── 🟢 BASIC — EXISTING / DO NOT TOUCH
@@ -730,22 +821,31 @@ airline-ai-platform/
 ├── basicrunning....
 ├── README.md
 └── test_connection.py                 🟢 BASIC
-Why I like this better
+```
+
+### 8.2 Why I like this better
+
 Now the separation is very obvious:
+
+```
 🟢 BASIC
 src/tools/
 └── flight_status.py
-This is your original learning example.
-And:
+```
 
+This is your original learning example. And:
+
+```
 🔵 AMADEUS
 src/amadeus/
 ├── client.py
 └── tools/
     └── flight_search.py
-is your real-world airline integration.
-Eventually:
+```
 
+is your real-world airline integration. Eventually:
+
+```
 Claude
   │
   ├───────────────┐
@@ -758,9 +858,13 @@ flight_status   flight_search
                   │
                   ▼
              Amadeus API
-This also gives you a nice portfolio story:
-The platform separates core domain tools from external airline-provider integrations.
-And if later we add another provider:
+```
+
+This also gives you a nice portfolio story: *the platform separates core domain tools from external airline-provider integrations.*
+
+### 8.3 Adding more providers later
+
+```
 src/
 ├── amadeus/
 │   └── tools/
@@ -772,11 +876,19 @@ src/
 │
 └── tools/
     └── flight_status.py
+```
+
 we can compare providers without disturbing your original code.
+
+### 8.4 Next step
+
 I recommend this structure. For now, create only:
 
+```
 src/amadeus/
 ├── __init__.py
 └── tools/
     └── __init__.py
+```
+
 Don't write the Amadeus API code yet. We'll do that as the next learning step.
