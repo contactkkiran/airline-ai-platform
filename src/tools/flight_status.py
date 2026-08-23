@@ -1,5 +1,18 @@
 from anthropic.types import ToolParam
 
+# ============================================================
+# TOOL SCHEMA
+# ============================================================
+#
+# This describes the tool to Claude.
+#
+# IMPORTANT:
+# This does NOT execute flight_status_lookup().
+# It only tells Claude what tool is available and
+# what input the tool expects.
+#
+# ============================================================
+
 flight_status_tool_schema: ToolParam = {
     "name": "flight_status_lookup",
     "description": "Get the current status of a flight by its flight number.",
@@ -8,12 +21,22 @@ flight_status_tool_schema: ToolParam = {
         "properties": {
             "flight_number": {
                 "type": "string",
-                "query": "The flight number, e.g. AI102",
+                "description": "The flight number, e.g. AI202",
             }
         },
         "required": ["flight_number"],
     },
 }
+
+
+# ============================================================
+# ACTUAL PYTHON TOOL
+# ============================================================
+#
+# This function is executed by OUR Python application.
+# Claude does NOT execute this function directly.
+#
+# ============================================================
 
 
 def flight_status_lookup(flight_number: str) -> dict:
