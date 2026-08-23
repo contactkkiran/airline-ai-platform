@@ -47,44 +47,34 @@ text answer and flows 2–6 never run.
 
 ## Project structure
 
-```mermaid
-flowchart TD
-    subgraph root[" "]
-        TC[test_connection.py]
-    end
-
-    subgraph src/config
-        SET["settings.py<br/><i>loads ANTHROPIC_API_KEY</i>"]
-    end
-
-    subgraph src/tools["src/tools (basic, working)"]
-        FS["flight_status.py<br/><i>flight_status_lookup&#40;&#41;<br/>flight_status_tool_schema: ToolParam</i>"]
-    end
-
-    subgraph src/integrations["src/integrations (new, scaffold only)"]
-        subgraph amadeus["amadeus/"]
-            INIT["__init__.py"]
-            CLIENT["client.py<br/><i>empty — Amadeus API client, planned</i>"]
-            subgraph amadeustools["tools/"]
-                FSEARCH["flight_search.py<br/><i>empty — real flight search, planned</i>"]
-            end
-        end
-    end
-
-    subgraph src/agents["src/agents (planned)"]
-        AG[" "]
-    end
-
-    subgraph src/orchestration["src/orchestration (planned)"]
-        OR[" "]
-    end
-
-    TC -->|reads API key| SET
-    TC -->|imports tool + schema| FS
-    TC -.->|not yet wired up| FSEARCH
-    FSEARCH -.->|will call| CLIENT
-    TC -.->|future| AG
-    TC -.->|future| OR
+```
+airline-ai-platform/
+│
+├── .env
+├── .gitignore
+├── README.md
+├── basicrunningnotes.md
+├── test_connection.py                 🟢 EXISTING — DON'T TOUCH
+│
+└── src/
+    │
+    ├── agents/                        (planned, empty)
+    │
+    ├── config/
+    │   └── settings.py                🟢 loads ANTHROPIC_API_KEY
+    │
+    ├── orchestration/                 (planned, empty)
+    │
+    ├── tools/                         🟢 BASIC — Claude-facing tools
+    │   └── flight_status.py           flight_status_lookup() + flight_status_tool_schema
+    │
+    └── integrations/                  🔵 NEW — external API providers
+        │
+        └── amadeus/
+            ├── __init__.py
+            ├── client.py              (empty — Amadeus API client, planned)
+            └── tools/
+                └── flight_search.py   (empty — real flight search, planned)
 ```
 
 - **`src/config/settings.py`** — loads `ANTHROPIC_API_KEY` from `.env`.
@@ -106,14 +96,21 @@ flowchart TD
 
 Planned direction, once the Amadeus integration is implemented:
 
-```mermaid
-flowchart LR
-    C[Claude]
-    C -->|tool_use: flight_status_lookup| BT[flight_status tool]
-    C -->|tool_use: flight_search| AT[flight_search tool]
-    BT --> LOCAL[Local mock data]
-    AT --> CLIENT[integrations/amadeus/client.py]
-    CLIENT --> API[(Amadeus API)]
+```
+                     Claude
+                       │
+                ┌──────┴──────┐
+                │             │
+                ▼             ▼
+        flight_status    flight_search
+             tool             tool
+                │             │
+                ▼             ▼
+          Existing         Amadeus
+          function           API
+                              │
+                              ▼
+                       Real flight data
 ```
 
 `src/tools/flight_status.py` and `test_connection.py` stay untouched while
