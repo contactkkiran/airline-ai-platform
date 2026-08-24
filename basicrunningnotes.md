@@ -1066,3 +1066,181 @@ We will not touch:
 Once the API key is configured and verified, we'll create `client.py`, then `flight_search.py`, one file at a time.
 
 So yes: Aviationstack is our next development track. ✈️
+
+---
+
+## 11. Verifying the Aviationstack API key
+
+Perfect. 👍
+
+### 11.1 Step 4 — Verify the key is loaded
+
+We're not calling Aviationstack yet. We only want to prove:
+
+```mermaid
+flowchart LR
+    ENV[.env] --> SET[settings.py]
+    SET --> PY["Python can read the key"]
+```
+
+Temporarily add this to `test_connection.py`. At the top, add:
+
+```python
+from src.config.settings import AVIATIONSTACK_API_KEY
+```
+
+Then, temporarily, add:
+
+```python
+print(
+    "Aviationstack API key loaded:",
+    bool(AVIATIONSTACK_API_KEY)
+)
+```
+
+So you should see:
+
+```
+Aviationstack API key loaded: True
+```
+
+**Why `bool()`?** We deliberately do not print the actual key. If the key is `abc123xyz...`, then `bool(AVIATIONSTACK_API_KEY)` returns `True` without exposing the secret. If the `.env` variable isn't loaded: `False`.
+
+**🛑 Important** — after testing, remove those two temporary lines from `test_connection.py`. We don't want configuration testing mixed into your working Claude tool-calling example.
+
+So:
+
+1. Add the import.
+2. Add the print.
+3. Run `test_connection.py`.
+4. Confirm you get `True`.
+5. Remove both temporary lines.
+
+Then tell me: *Step 4 done — True*
+
+We'll then create our first Aviationstack directory/file, one tiny step at a time. ✈️
+
+---
+
+## 12. Verifying the key without touching the basic code
+
+> ater updaing settings.py next?
+
+Yes. 👍 After updating `settings.py`, the next step is exactly to verify that Python can read the new Aviationstack variable. But because you want to keep the basic code untouched, I would not modify your existing `test_connection.py` even temporarily.
+
+Let's create a tiny separate verification file instead.
+
+### 12.1 Step 4 — Create a temporary verification file
+
+At the project root:
+
+```
+airline-ai-platform/
+├── test_connection.py             🟢 EXISTING — DON'T TOUCH
+├── test_aviationstack_config.py   🔵 NEW — TEMPORARY
+└── ...
+```
+
+Create `test_aviationstack_config.py`. Put only this in it:
+
+```python
+from src.config.settings import AVIATIONSTACK_API_KEY
+
+
+print(
+    "Aviationstack API key loaded:",
+    bool(AVIATIONSTACK_API_KEY)
+)
+```
+
+Run:
+
+```bash
+python test_aviationstack_config.py
+```
+
+Expected:
+
+```
+Aviationstack API key loaded: True
+```
+
+We are not calling Aviationstack yet. We're only testing:
+
+```mermaid
+flowchart LR
+    ENV[.env] --> LD["load_dotenv()"]
+    LD --> SET[settings.py]
+    SET --> KEY[AVIATIONSTACK_API_KEY]
+    KEY --> TEST[test_aviationstack_config.py]
+```
+
+If you get `True`, tell me *Step 4 True*.
+
+Then we'll delete the temporary verification file and move to the next tiny step: create the Amadeus/Aviationstack integration directory—sorry, Aviationstack integration directory—and nothing more. 😄
+
+---
+
+## 13. Cleanup and committing the config checkpoint
+
+> done true is shown
+
+Excellent! ✅ That confirms:
+
+```mermaid
+flowchart LR
+    ENV[.env] --> LD["load_dotenv()"]
+    LD --> SET[settings.py]
+    SET --> KEY[AVIATIONSTACK_API_KEY]
+    KEY --> PY[Python]
+```
+
+is working.
+
+### 13.1 Step 5 — Clean up
+
+Since the verification worked, delete the temporary file: `test_aviationstack_config.py`. We don't need it anymore.
+
+Your project should go back to:
+
+```
+airline-ai-platform/
+│
+├── test_connection.py          🟢 Existing
+│
+├── src/
+│   ├── config/
+│   │   └── settings.py         🟢 Updated
+│   │
+│   └── tools/
+│       └── flight_status.py    🟢 Untouched
+│
+└── .env                        🔐 Not committed
+```
+
+### 13.2 Then commit this checkpoint
+
+Run:
+
+```bash
+git status
+```
+
+Review the changes. Then:
+
+```bash
+git add src/config/settings.py
+git commit -m "Add Aviationstack API configuration"
+```
+
+And push:
+
+```bash
+git push
+```
+
+**🛑 Stop here.** Do not create the Aviationstack client yet.
+
+Once you've committed and pushed successfully, tell me: *Step 5 done*
+
+Then we'll create just one directory: `src/integrations/aviationstack/` — and I'll explain why we're putting the external API there before we write any API code.
