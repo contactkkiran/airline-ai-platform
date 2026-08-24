@@ -860,7 +860,7 @@ This also gives you a nice portfolio story: *the platform separates core domain 
 
 ```
 src/
-├── amadeus/
+├── Aviation/
 │   └── tools/
 │       └── flight_search.py
 │
@@ -886,3 +886,183 @@ src/amadeus/
 ```
 
 Don't write the Amadeus API code yet. We'll do that as the next learning step.
+
+---
+
+## 9. Choosing Aviationstack as the real flight-data provider
+
+> how about this Aviationstack: Real-Time Flight Tracker API - Free Flight APIs?
+
+Yes — Aviationstack is actually a very good option for our learning project, and I would consider it before Amadeus.
+
+I checked their current API information. Aviationstack provides real-time flight status data, airport/airline information, routes, historical data, and flight schedules. Their current free plan provides 100 API requests/month and includes real-time flights.
+
+### 9.1 But there is an important distinction
+
+For our project, Aviationstack is excellent for:
+
+- ✈️ Flight status
+- ✈️ Flight tracking
+- ✈️ Departure / arrival
+- ✈️ Delays
+- ✈️ Airport information
+- ✈️ Airline information
+- ✈️ Aircraft information
+
+Their real-time flight data can have updates delayed by roughly 30–60 seconds, according to Aviationstack.
+
+However, I would not treat Aviationstack as a complete flight-booking engine. Our project should separate:
+
+```mermaid
+flowchart LR
+    D["Flight DATA"] --> AS[Aviationstack]
+```
+
+from eventually:
+
+```mermaid
+flowchart LR
+    B["Flight BOOKING"] --> G["Booking / GDS / airline reservation API"]
+```
+
+That's actually useful for your AI architecture learning.
+
+### 9.2 I recommend Aviationstack for our next step
+
+Instead of:
+
+```
+src/
+└── amadeus/
+```
+
+I'd make the provider separation even more generic:
+
+```
+airline-ai-platform/
+│
+├── 🟢 BASIC — EXISTING
+│
+├── src/
+│   ├── agents/
+│   │
+│   ├── config/
+│   │   └── settings.py
+│   │
+│   ├── orchestration/
+│   │
+│   ├── tools/
+│   │   └── flight_status.py
+│   │
+│   └── 🔵 integrations/
+│       │
+│       └── 🔵 aviationstack/
+│           ├── __init__.py
+│           ├── client.py
+│           └── tools/
+│               ├── __init__.py
+│               └── flight_search.py
+│
+├── .env
+├── .gitignore
+├── README.md
+└── test_connection.py
+```
+
+And your existing code remains untouched.
+
+### 9.3 The architecture becomes
+
+```mermaid
+flowchart TD
+    CL[CLAUDE] --> CT["Claude Tools"]
+    CT --> BT["🟢 Basic Tool<br/>flight_status"]
+    CT --> AV["🔵 Aviationstack integration"]
+    BT --> DB["fake/local DB"]
+    AV --> API["Real Flight API"]
+```
+
+That's a much better architecture lesson because we're learning the difference between:
+
+- Tool
+- External Integration
+- LLM
+- Orchestration
+
+### 9.4 One thing I especially like for your project
+
+Aviationstack's API is a standard REST API returning JSON, and their documentation specifically describes Python integration. So we can learn the complete chain ourselves:
+
+```mermaid
+flowchart TD
+    C1[Claude] --> TS["Tool schema"]
+    TS --> PT["Python tool"]
+    PT --> AC["Aviationstack client"]
+    AC --> REST["HTTP REST API"]
+    REST --> JSON[JSON]
+    JSON --> PY[Python]
+    PY --> C2[Claude]
+    C2 --> ANS["Natural-language answer"]
+```
+
+That is much more educational than hiding the API interaction behind a library.
+
+And the free 100-request monthly allowance is enough for our initial development/testing, as long as we don't repeatedly hammer the API.
+
+I would choose Aviationstack for our next stage. We can keep Amadeus as a future provider so you eventually learn how to design the platform for multiple aviation providers.
+
+For now, don't create any files yet. The next step should be just setting up the Aviationstack API key securely in your existing `.env`/`settings.py`, while leaving the basic implementation untouched.
+
+---
+
+## 10. Committing to Aviationstack
+
+> Go are we going to use this now?
+
+Yes. 👍 I recommend we use Aviationstack now as the first real external aviation API in this project. But we'll do it very slowly and keep your existing basic code untouched.
+
+### 10.1 Our next milestone
+
+🟢 BASIC — untouched
+
+- `src/tools/flight_status.py`
+- `test_connection.py`
+
+Then add:
+
+🔵 AVIATIONSTACK — new
+
+```
+src/integrations/
+└── aviationstack/
+    ├── __init__.py
+    ├── client.py
+    └── tools/
+        ├── __init__.py
+        └── flight_search.py
+```
+
+### 10.2 Eventually
+
+```mermaid
+flowchart TD
+    U[User] --> C[Claude]
+    C --> T["Aviationstack flight-search tool"]
+    T --> API["Aviationstack API"]
+    API --> D["Real flight data"]
+    D --> C2[Claude]
+    C2 --> A[Answer]
+```
+
+### 10.3 But not yet
+
+Our next step is only API setup. We'll first get an Aviationstack API key and put it securely in your existing `.env`.
+
+We will not touch:
+
+- `flight_status.py`
+- `test_connection.py`
+
+Once the API key is configured and verified, we'll create `client.py`, then `flight_search.py`, one file at a time.
+
+So yes: Aviationstack is our next development track. ✈️
