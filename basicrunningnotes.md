@@ -1244,3 +1244,271 @@ git push
 Once you've committed and pushed successfully, tell me: *Step 5 done*
 
 Then we'll create just one directory: `src/integrations/aviationstack/` — and I'll explain why we're putting the external API there before we write any API code.
+
+---
+
+## 14. Step 8 — testing the Aviationstack client configuration
+
+Perfect. 👍 Step 8 — test the client configuration only.
+
+We have now created `src/integrations/aviationstack/client.py`. Before we make a real API call, let's verify that the client can see the API key and has the correct base URL.
+
+### 14.1 Add one method to `client.py`
+
+Your current file is:
+
+```python
+import requests
+
+from src.config.settings import AVIATIONSTACK_API_KEY
+
+
+class AviationstackClient:
+
+    BASE_URL = "https://api.aviationstack.com/v1"
+
+    def __init__(self):
+        self.api_key = AVIATIONSTACK_API_KEY
+```
+
+Now add only this method:
+
+```python
+    def is_configured(self) -> bool:
+        return bool(self.api_key)
+```
+
+So the complete file becomes:
+
+```python
+import requests
+
+from src.config.settings import AVIATIONSTACK_API_KEY
+
+
+class AviationstackClient:
+
+    BASE_URL = "https://api.aviationstack.com/v1"
+
+    def __init__(self):
+        self.api_key = AVIATIONSTACK_API_KEY
+
+    def is_configured(self) -> bool:
+        return bool(self.api_key)
+```
+
+**Why are we doing this?** We're separating configuration verification from API communication. `client.is_configured()` only answers *"Do I have an Aviationstack API key?"* It does not call Aviationstack.
+
+### 14.2 Now create a temporary test
+
+Create `test_aviationstack_client.py` at the project root:
+
+```
+airline-ai-platform/
+├── test_connection.py
+├── test_aviationstack_client.py   🔵 TEMPORARY
+└── src/
+    └── integrations/
+        └── aviationstack/
+            ├── __init__.py
+            └── client.py
+```
+
+Put this in it:
+
+```python
+from src.integrations.aviationstack.client import AviationstackClient
+
+
+client = AviationstackClient()
+
+print("Aviationstack configured:", client.is_configured())
+print("Aviationstack base URL:", client.BASE_URL)
+```
+
+Run:
+
+```bash
+python test_aviationstack_client.py
+```
+
+Expected:
+
+```
+Aviationstack configured: True
+Aviationstack base URL: https://api.aviationstack.com/v1
+```
+
+**🛑 Stop here**
+
+- Don't make the real API request yet.
+- Don't create `flight_search.py` yet.
+
+Once you get `Aviationstack configured: True`, tell me *Step 8 done*. Then we'll make our first real Aviationstack API call. ✈️
+
+---
+
+> can you plee printcomplete project hierrcy with Amadeus disctinguising basic and amadaus basic remail untouched
+
+## 15. Step 8 — testing the Aviationstack client configuration (repeated)
+
+Perfect. 👍 Step 8 — test the client configuration only.
+
+We have now created `src/integrations/aviationstack/client.py`. Before we make a real API call, let's verify that the client can see the API key and has the correct base URL.
+
+### 15.1 Add one method to `client.py`
+
+Your current file is:
+
+```python
+import requests
+
+from src.config.settings import AVIATIONSTACK_API_KEY
+
+
+class AviationstackClient:
+
+    BASE_URL = "https://api.aviationstack.com/v1"
+
+    def __init__(self):
+        self.api_key = AVIATIONSTACK_API_KEY
+```
+
+Now add only this method:
+
+```python
+    def is_configured(self) -> bool:
+        return bool(self.api_key)
+```
+
+So the complete file becomes:
+
+```python
+import requests
+
+from src.config.settings import AVIATIONSTACK_API_KEY
+
+
+class AviationstackClient:
+
+    BASE_URL = "https://api.aviationstack.com/v1"
+
+    def __init__(self):
+        self.api_key = AVIATIONSTACK_API_KEY
+
+    def is_configured(self) -> bool:
+        return bool(self.api_key)
+```
+
+**Why are we doing this?** We're separating configuration verification from API communication. `client.is_configured()` only answers *"Do I have an Aviationstack API key?"* It does not call Aviationstack.
+
+### 15.2 Now create a temporary test
+
+Create `test_aviationstack_client.py` at the project root:
+
+```
+airline-ai-platform/
+├── test_connection.py
+├── test_aviationstack_client.py   🔵 TEMPORARY
+└── src/
+    └── integrations/
+        └── aviationstack/
+            ├── __init__.py
+            └── client.py
+```
+
+Put this in it:
+
+```python
+from src.integrations.aviationstack.client import AviationstackClient
+
+
+client = AviationstackClient()
+
+print("Aviationstack configured:", client.is_configured())
+print("Aviationstack base URL:", client.BASE_URL)
+```
+
+Run:
+
+```bash
+python test_aviationstack_client.py
+```
+
+Expected:
+
+```
+Aviationstack configured: True
+Aviationstack base URL: https://api.aviationstack.com/v1
+```
+
+**🛑 Stop here**
+
+- Don't make the real API request yet.
+- Don't create `flight_search.py` yet.
+
+Once you get `Aviationstack configured: True`, tell me *Step 8 done*. Then we'll make our first real Aviationstack API call. ✈️
+
+---
+
+## 16. Fixing an `ImportError` on `AviationstackClient`
+
+```
+(.venv) kirankumar@kirans-MacBook-Pro airline-ai-platform % python test_aviationstack_client.py
+Traceback (most recent call last):
+  File "/Users/kirankumar/Documents/airline-ai-platform/test_aviationstack_client.py", line 1, in <module>
+    from src.integrations.aviationstack.client import AviationstackClient
+ImportError: cannot import name 'AviationstackClient' from 'src.integrations.aviationstack.client' (/Users/kirankumar/Documents/airline-ai-platform/src/integrations/aviationstack/client.py)
+```
+
+Good — this is a real Python import error, and the message tells us exactly where to look.
+
+Your test is finding the correct file, `src/integrations/aviationstack/client.py`, but Python cannot find `AviationstackClient` inside that file. So the problem is inside `client.py`, not in the import statement.
+
+### 16.1 Step 8A — Check `client.py`
+
+Please open `src/integrations/aviationstack/client.py`. It should contain exactly this:
+
+```python
+import requests
+
+from src.config.settings import AVIATIONSTACK_API_KEY
+
+
+class AviationstackClient:
+
+    BASE_URL = "https://api.aviationstack.com/v1"
+
+    def __init__(self):
+        self.api_key = AVIATIONSTACK_API_KEY
+
+    def is_configured(self) -> bool:
+        return bool(self.api_key)
+```
+
+Pay particular attention to `class AviationstackClient:` and `def is_configured(self) -> bool:`.
+
+### 16.2 Then save the file
+
+In VS Code: `⌘ + S`. Then run again:
+
+```bash
+python test_aviationstack_client.py
+```
+
+Expected:
+
+```
+Aviationstack configured: True
+Aviationstack base URL: https://api.aviationstack.com/v1
+```
+
+### 16.3 Why this error happened
+
+Python successfully did `from src.integrations.aviationstack.client import ...`, so it found `src/integrations/aviationstack/client.py`. But then it looked inside that module for `AviationstackClient` and didn't find it. That's why the error is:
+
+```
+ImportError: cannot import name 'AviationstackClient'
+```
+
+Don't change `test_aviationstack_client.py` yet. Fix/check `client.py` first and run it again.
