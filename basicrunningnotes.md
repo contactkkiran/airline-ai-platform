@@ -845,19 +845,13 @@ src/amadeus/
 
 is your real-world airline integration. Eventually:
 
-```
-Claude
-  │
-  ├───────────────┐
-  │               │
-  ▼               ▼
-Basic Tool      Amadeus Tool
-  │               │
-  ▼               ▼
-flight_status   flight_search
-                  │
-                  ▼
-             Amadeus API
+```mermaid
+flowchart TD
+    C[Claude] --> BT[Basic Tool]
+    C --> AT[Amadeus Tool]
+    BT --> FS[flight_status]
+    AT --> FSE[flight_search]
+    FSE --> API[Amadeus API]
 ```
 
 This also gives you a nice portfolio story: *the platform separates core domain tools from external airline-provider integrations.*
